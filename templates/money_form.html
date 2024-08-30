@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #cdb7ec;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+        }
+        .container {
+            background-color: #dfdcdc;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            margin-top: 20px;
+            width: 300px;
+        }
+        h1 {
+            color: #5e3a87;
+            text-align: center;
+        }
+        p {
+            color: #8e44ad;
+            font-size: 18px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin: 10px 0 5px 0;
+            color: #5e3a87;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .form-group label {
+            flex-basis: 40%;
+        }
+        .form-group input {
+            flex-basis: 58%;
+        }
+        input[type="submit"] {
+            background-color: #7d3c98;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        input[type="submit"]:hover {
+            background-color: #6c3483;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Money</h1>
+
+        <form action='/money/money_by_month/' method='get'>
+            <div class="form-group">
+                <label for="month">Select month:</label>
+                <input type="month" id="month" name="month">
+            </div>
+
+          <input type="submit" value="Submit">
+        </form>
+
+{#        <div class="next-page-link">#}
+{#            можливо тут просто нормально щоб суму якусь показало#}
+{#            <a href="money_by_month.html">Let`s look at money amount!</a>#}
+{#        </div>#}
+    </div>
+</body>
+</html>
+
+
