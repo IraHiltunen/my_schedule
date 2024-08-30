@@ -245,20 +245,20 @@ def delete_reservation():
 # в темплейті зробити випадайку з датами і по датах показати ліст з резерваціями на
 # цю дату в ('/schedule/schedule_by_day/')
 
-@app.post('/reservation/delete/')# зробила,як з клієнтами...не знаю чи працює
-def delete_reservation():
-    form_data = request.form
-    reservation_id = form_data.get('id')
-
-    database.init_db()
-    reservation_delete = (database.db_session.query(models.Schedule)
-                          .filter_by(id=reservation_id).first())
-
-    if reservation_delete:
-        database.db_session.delete(reservation_delete)
-        database.db_session.commit()
-
-    return redirect('/schedule/schedule_by_day/')
+# @app.post('/reservation/delete/')# зробила,як з клієнтами...не знаю чи працює
+# def delete_reservation():
+#     form_data = request.form
+#     reservation_id = form_data.get('id')
+#
+#     database.init_db()
+#     reservation_delete = (database.db_session.query(models.Schedule)
+#                           .filter_by(id=reservation_id).first())
+#
+#     if reservation_delete:
+#         database.db_session.delete(reservation_delete)
+#         database.db_session.commit()
+#
+#     return redirect('/schedule/schedule_by_day/')
 
 
 @app.get('/schedule/')
