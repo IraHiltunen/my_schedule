@@ -108,28 +108,40 @@
 <body>
     <div class="container">
         <h1>Schedule by day</h1>
+<!--        <form method="get" action="/schedule/schedule_by_day/">-->
+<!--            <label for="date">Оберіть дату або місяць (формат YYYY-MM або YYYY-MM-DD):</label>-->
+<!--            <input type="text" name="date" placeholder="2025-06" required>-->
+<!--            <button type="submit">Показати</button>-->
+<!--        </form>-->
         <table>
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Start_time</th>
-                    <th>End_time</th>
-                    <th>Service_id</th>
+<!--                    <th>End_time</th>-->
+                    <th>Service</th>
+
+                    <th>Client</th>
+                    <th>Club</th>
                 </tr>
             </thead>
             <tbody>
                 {% for reservation in reservations %}
                 <tr>
-                    <td>{{ schedule.id }}</td>
-                    <td>{{ schedule.start_time }}</td>
-                    <td>{{ schedule.end_time }}</td>
-                    <td>{{ schedule.service_id }}</td>
+                    <td>{{ reservation.id }}</td>
+                    <td>{{ reservation.start_time }}</td>
+<!--                    <td>{{ reservation.end_time }}</td>-->
+                    <td>{{ reservation.service_name }}</td>
+
+                    <td>{{ reservation.client_name }}</td>
+                    <td>{{ reservation.court_name }}</td>
 
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         <p>
+
 
         <div class="next-page-link">
           <a href="/">Back to main page</a>
@@ -142,7 +154,8 @@
           <label for="id">id of reservation for delete:</label><br>
           <select id="id" name="id">
             {% for reservation in reservations %}
-                <option value="{{ reservation.id }}">{{ reservation.id  }} </option>
+<!--                <option value="{{ reservation.id }}">{{ reservation.id  }} </option>-->
+              <option value="{{ reservation.id }}">{{ reservation.id }} — {{ reservation.client_name }} о {{ reservation.start_time }}</option>
             {% endfor %}
           </select><br>
           <p>

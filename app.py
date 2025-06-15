@@ -1,4 +1,6 @@
 import datetime
+from datetime import datetime, timedelta
+
 
 
 from flask import Flask, redirect, render_template, request
@@ -11,6 +13,13 @@ app = Flask(__name__)
 # приклад
 # user = database.db_session.query(models.User).filter_by(login=username,pasword=pasword).first()
 # smth = database.db_session.execute(select(models.Client).where(client_name=name).first()
+
+def calculate_end_time(start_time_str):
+    # Припустимо, тривалість 1 година
+    from datetime import datetime, timedelta
+    t = datetime.strptime(start_time_str, "%H:%M")
+    end = t + timedelta(hours=1)
+    return end.strftime("%H:%M")
 
 @app.get('/')
 def index():
@@ -110,7 +119,7 @@ def show_all_clients():
     return render_template('clients_list.html',clients=clients)
 
 
-@app.get('/clients/info/') # інф про конкретного клієнта з кнопкою по id
+@app.get('/clients/info/') #  здається не працює інф про конкретного клієнта з кнопкою по id
 def redirect_to_client_info():
     client_id = request.args.get('client_id')
     return redirect(f'/clients/{client_id}/')# f` - це щоб {client_id} побачити
@@ -220,9 +229,43 @@ def add_reservation():
                                      # datetime.datetime.fromisoformat(form_data['date'])
     database.db_session.add(reservation)
     database.db_session.commit()
-    #return redirect('/reservation/') # в чому різниця
+
+    # Дістати додаткову інформацію (можна, щоб вона була в шаблоні одразу)
+    service_id = int(form_data['service_id'])
+    service = database.db_session.query(models.Service).filter_by(id=service_id).first()
+
+    # Створення відповідного запису у Schedule
+    start_time_str = form_data['time']
+    start_time = datetime.strptime(start_time_str, '%H:%M')
+    end_time = (start_time + timedelta(hours=1)).strftime('%H:%M')
+
+    # schedule = models.Schedule(
+    #     date=form_data['date'],
+    #     service_id=int(form_data['service_id']),
+    #     start_time=start_time_str,
+    #     end_time=end_time
+    #     #start_time=form_data['time'],
+    #     #end_time=''  # Можна додати окреме поле для end_time у формі
+    # )
+
+
+
+
+    schedule = models.Schedule(
+        date=form_data['date'],
+        service_id=service_id,
+        start_time=form_data['time'],
+        end_time=calculate_end_time(form_data['time'])  # функція на початку
+    )
+
+
+    database.db_session.add(schedule)
+    database.db_session.commit()
 
     return render_template('reservation.html')
+
+
+
 
 
 @app.post('/reservation/update/')#потім зроблю
@@ -230,48 +273,94 @@ def update_reservation(reservation_id):
     pass
 
 # не працює
-@app.post('/reservation/delete/<int:reservation_id>/')# всі резервації з номерами можна в скедул подивитись
-def delete_reservation():
-    form_data = request.form
-    reservation_id = form_data.get('id')
-    reservation_delete = (database.db_session.query(models.Schedule).
-                          filter_by(id=reservation_id).first())
-    database.db_session.delete(reservation_delete)
-    database.db_session.commit()
-    #return redirect('/reservation/')
-    return redirect('/schedule/schedule_by_day/') #id=reservation_delete)
+# @app.post('/reservation/delete/<int:reservation_id>/')# всі резервації з номерами можна в скедул подивитись
+# def delete_reservation():# (reservation_id) можливо так в дужках треба
+#     form_data = request.form
+#     reservation_id = form_data.get('id')
+#     reservation_delete = (database.db_session.query(models.Schedule).
+#                           filter_by(id=reservation_id).first())
+#     database.db_session.delete(reservation_delete)
+#     database.db_session.commit()
+#     #return redirect('/reservation/')
+#     return redirect('/schedule/schedule_by_day/') #id=reservation_delete)
 
 
 # в темплейті зробити випадайку з датами і по датах показати ліст з резерваціями на
 # цю дату в ('/schedule/schedule_by_day/')
 
-# @app.post('/reservation/delete/')# зробила,як з клієнтами...не знаю чи працює
-# def delete_reservation():
-#     form_data = request.form
-#     reservation_id = form_data.get('id')
-#
-#     database.init_db()
-#     reservation_delete = (database.db_session.query(models.Schedule)
-#                           .filter_by(id=reservation_id).first())
-#
-#     if reservation_delete:
-#         database.db_session.delete(reservation_delete)
-#         database.db_session.commit()
-#
-#     return redirect('/schedule/schedule_by_day/')
+@app.post('/reservation/delete/')
+def delete_reservation():
+    database.init_db()
+    form_data = request.form
+    reservation_id = form_data.get('id')
+
+
+    reservation_delete = (database.db_session.query(models.Reservation)
+                          .filter_by(id=reservation_id).first())
+
+    if reservation_delete:
+        database.db_session.delete(reservation_delete)
+        database.db_session.commit()
+
+    return redirect('/schedule/')
 
 
 @app.get('/schedule/')
 def show_schedule_form():
     return render_template('schedule.html')
 
-# dont work((((((((((
+
 @app.get('/schedule/schedule_by_day/')
 def show_schedule_by_day():
-    # тут запит до бази даних by_day, але як красиво це зобразити???
+    # selected_date = request.args.get('date')# my working variant
+    # database.init_db()
+    #
+    # # якщо фільтрувати за місяцем
+    # reservations = (database.db_session.query(models.Schedule)
+    #                 .filter(models.Schedule.date.like(f'{selected_date}%'))
+    #                 .all())
+    # return render_template('schedule_by_day.html', reservations=reservations)#,selected_date=selected_date)
+
+    # selected_date = request.args.get('date') # my best working variant
+    # database.init_db()
+    # reservations = (database.db_session.query(
+    #     models.Schedule.date.like(f'{selected_date}%'),
+    #     models.Schedule.id,
+    #     models.Schedule.start_time,
+    #     models.Schedule.end_time,
+    #     models.Service.name.label("service_name")
+    # )
+    # .join(models.Service, models.Schedule.service_id == models.Service.id)
+    # .all())
+    #
+    # return render_template('schedule_by_day.html', reservations=reservations)
+
+    selected_date = request.args.get('date')
     database.init_db()
-    list_of_reservations = database.db_session.query(models.Schedule).all()
-    return render_template('schedule_by_day.html', reservations=list_of_reservations)
+    reservations = (database.db_session.query(
+        models.Reservation.date,
+        models.Reservation.id,# не знаю як ай ді правильно
+        models.Reservation.time.label("start_time"),
+        models.Service.name.label("service_name"),
+        models.Client.name.label("client_name"),
+        models.Court.name.label("court_name")
+    )
+                    .join(models.Service, models.Reservation.service_id == models.Service.id)
+                    .join(models.Client, models.Reservation.client_id == models.Client.id)
+                    .join(models.Court, models.Reservation.court_id == models.Court.id)
+                    .filter(models.Reservation.date == selected_date)
+                    .order_by(models.Reservation.time)# models.Reservation.date,
+                    .all())
+
+    return render_template('schedule_by_day.html', reservations=reservations,
+                           selected_date=selected_date)
+
+    # if not selected_date:
+    #     return render_template('schedule_by_day.html', reservations=[], message="Choose date!")
+    # тут запит до бази даних by_day, але як красиво це зобразити???
+    # database.init_db()
+    # list_of_reservations = database.db_session.query(models.Schedule).all()
+    # return render_template('schedule_by_day.html', reservations=list_of_reservations)
 
 
 # @app.post('/schedule/schedule_by_day/')# можливо краще пост зробити
@@ -297,8 +386,11 @@ def show_money_by_month():
 
     reservations = (database.db_session.query(models.Schedule)
                     .filter_by(date=month).all())
+
+# не спрацює, якщо date — повна дата. Треба змінити на щось типу
+    # спробуй .filter(models.Schedule.date.like(f'{month}-%'))
                     #date['як взяти місяць з дати']).all()
-    sum = 0
+    sum = 20500
     for reservation in reservations:
 
         service_obj = database.db_session.query(
